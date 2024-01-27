@@ -2,6 +2,7 @@ package com.sunrise.admissionservice.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -14,6 +15,6 @@ public class Admission {
     @NotBlank(message = "Status is required.")
     public String status;
     public LocalDate applicationDate;
-    @NotEmpty(message = "Candidate is required.")
+    @NotNull(message = "Candidate is required.")
     public Candidate candidate;
 }

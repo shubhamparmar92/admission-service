@@ -11,6 +11,5 @@ public class ClassEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public int id;
     public String section;
-
     public String name;
 }

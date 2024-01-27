@@ -2,6 +2,7 @@ package com.sunrise.admissionservice.service.impl;
 
 import com.sunrise.admissionservice.dto.request.Admission;
 import com.sunrise.admissionservice.dto.response.AdmissionResponse;
+import com.sunrise.admissionservice.exception.APIResponseException;
 import com.sunrise.admissionservice.exception.RecordNotFoundException;
 import com.sunrise.admissionservice.mapper.AdmissionEntityMapper;
 import com.sunrise.admissionservice.mapper.ClassEntityMapper;
@@ -57,7 +58,7 @@ public class AdmissionServiceImpl implements AdmissionService {
 
         List<AdmissionEntity> admissionEntityList = repository.findAll();
         if (CollectionUtils.isEmpty(admissionEntityList))
-            throw new RecordNotFoundException("No Data Found");
+            throw new RecordNotFoundException("Candidates list Empty");
         List<Integer> classIds = admissionEntityList.stream().filter(e -> !REJECTED.equals(e.getStatus()) && Objects.nonNull(e.getCandidate())).map(e -> e.getCandidate().getClassId()).toList();
         List<AdmissionResponse> admissionResponses = mapper.toDTOList(admissionEntityList);
         if (!classIds.isEmpty()) {
@@ -85,7 +86,7 @@ public class AdmissionServiceImpl implements AdmissionService {
 
     @Override
     @Transactional
-    public AdmissionResponse updateCandidate(String id, Admission request) throws RecordNotFoundException {
+    public AdmissionResponse updateCandidate(String id, Admission request) throws RecordNotFoundException, APIResponseException {
         log.debug("Updating Candidate to process: {}", request);
         Optional<AdmissionEntity> response = repository.findById(Integer.parseInt(id));
         if (response.isEmpty())
@@ -96,7 +97,9 @@ public class AdmissionServiceImpl implements AdmissionService {
         if (!REJECTED.equals(request.getStatus()))
             updateClassDetails(admissionResponse, classEntity);
         if(APPROVED.equals(request.getStatus()))
+        {
             helper.saveAsStudent(admissionResponse);
+}
 
         return admissionResponse;
     }

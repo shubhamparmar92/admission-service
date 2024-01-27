@@ -8,11 +8,13 @@ public class RecordNotFoundException extends Throwable {
 
     public RecordNotFoundException(String message)
     {
+        super(message);
         log.error(message);
     }
 
     public RecordNotFoundException(String message, HttpStatus status)
     {
+        super(message);
         log.error(message, status);
     }
 }

@@ -1,11 +1,13 @@
 package com.sunrise.admissionservice.service.impl;
 
-import com.sunrise.admissionservice.dto.request.Admission;
+import com.sunrise.admissionservice.dto.request.ClassDetails;
 import com.sunrise.admissionservice.exception.RecordNotFoundException;
+import com.sunrise.admissionservice.mapper.ClassEntityMapper;
 import com.sunrise.admissionservice.model.ClassEntity;
 import com.sunrise.admissionservice.repository.ClassRepository;
 import com.sunrise.admissionservice.service.ClassService;
 import lombok.extern.slf4j.Slf4j;
+import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,8 @@ public class ClassServiceImpl implements ClassService {
 
     @Autowired
     ClassRepository classRepository;
+
+    ClassEntityMapper mapper = Mappers.getMapper(ClassEntityMapper.class);
 
     public ClassEntity getClassDetailsByName(String className) throws RecordNotFoundException {
         log.debug("Getting Class details");
@@ -55,5 +59,10 @@ public class ClassServiceImpl implements ClassService {
 
         return response;
 
+    }
+
+    public Integer addClass(final ClassDetails request)
+    {
+        return classRepository.save(mapper.toEntity(request)).getId();
     }
 }
