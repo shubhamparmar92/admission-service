@@ -1,6 +1,7 @@
 package com.sunrise.admissionservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,9 +28,7 @@ public class CandidateResponse {
     public List<AddressResponse> addressList;
 
     public List<EmailResponse> emailList;
+    public String className;
 
-    public ClassResponse classDetails;
-
-    @JsonIgnore
-    public int classId;
+    public String section;
 }

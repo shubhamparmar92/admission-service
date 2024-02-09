@@ -11,7 +11,7 @@ public class StudentClientConfiguration {
     WebClient studentClient()
     {
         return WebClient.builder().
-                baseUrl("http://localhost:8081/student")
+                baseUrl("http://localhost:8081/")
                 .build();
     }
 }

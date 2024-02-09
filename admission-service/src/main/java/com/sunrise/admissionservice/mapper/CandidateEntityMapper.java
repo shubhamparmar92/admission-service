@@ -9,7 +9,7 @@ import org.mapstruct.Mapping;
 
 import java.util.List;
 
-@Mapper(uses = {ClassEntityMapper.class, AddressEntityMapper.class, PhoneMapper.class, EmailMapper.class})
+@Mapper(uses = {AddressEntityMapper.class, PhoneMapper.class, EmailMapper.class})
 public interface CandidateEntityMapper {
 
 

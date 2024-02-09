@@ -31,6 +31,7 @@ public class CandidateEntity {
     @OneToMany(cascade=CascadeType.ALL)
     public List<EmailEntity> emailList;
 
-    public int classId;
+    public String className;
+    public String section;
 
 }

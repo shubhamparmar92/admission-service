@@ -28,7 +28,7 @@ public class AdmissionController {
     @CrossOrigin
     public ResponseEntity<Integer> addCandidate(@Valid @RequestBody Admission request) throws RecordNotFoundException {
         log.info("Request received for admission: {}", request);
-        return new ResponseEntity<>(service.addCandidate(request),HttpStatus.CREATED);
+        return new ResponseEntity<>(service.addCandidate(request), HttpStatus.CREATED);
     }
 
     @GetMapping

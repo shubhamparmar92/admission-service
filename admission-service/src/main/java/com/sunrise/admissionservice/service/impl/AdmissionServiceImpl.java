@@ -5,9 +5,7 @@ import com.sunrise.admissionservice.dto.response.AdmissionResponse;
 import com.sunrise.admissionservice.exception.APIResponseException;
 import com.sunrise.admissionservice.exception.RecordNotFoundException;
 import com.sunrise.admissionservice.mapper.AdmissionEntityMapper;
-import com.sunrise.admissionservice.mapper.ClassEntityMapper;
 import com.sunrise.admissionservice.model.AdmissionEntity;
-import com.sunrise.admissionservice.model.ClassEntity;
 import com.sunrise.admissionservice.repository.AdmissionRepository;
 import com.sunrise.admissionservice.service.AdmissionService;
 import com.sunrise.admissionservice.service.ClassService;
@@ -19,11 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Optional;
 
 import static com.sunrise.admissionservice.constant.AdmissionConstant.APPROVED;
-import static com.sunrise.admissionservice.constant.AdmissionConstant.REJECTED;
 
 @Service
 @Slf4j
@@ -43,12 +40,7 @@ public class AdmissionServiceImpl implements AdmissionService {
     @Override
     public Integer addCandidate(Admission request) throws RecordNotFoundException {
         log.debug("Adding Candidate to process: {}", request);
-
         AdmissionEntity admissionEntity = mapper.toEntity(request);
-
-        ClassEntity classEntity = classService.getClassDetailsById(Integer.parseInt(request.getCandidate().getClassDetails()));
-        admissionEntity.getCandidate().setClassId(classEntity.getId());
-
         return repository.save(admissionEntity).getId();
 
     }
@@ -59,13 +51,7 @@ public class AdmissionServiceImpl implements AdmissionService {
         List<AdmissionEntity> admissionEntityList = repository.findAll();
         if (CollectionUtils.isEmpty(admissionEntityList))
             throw new RecordNotFoundException("Candidates list Empty");
-        List<Integer> classIds = admissionEntityList.stream().filter(e -> !REJECTED.equals(e.getStatus()) && Objects.nonNull(e.getCandidate())).map(e -> e.getCandidate().getClassId()).toList();
-        List<AdmissionResponse> admissionResponses = mapper.toDTOList(admissionEntityList);
-        if (!classIds.isEmpty()) {
-            List<ClassEntity> classEntityList = classService.getClassDetailsByIdList(classIds);
-            updateAllClassDetails(admissionResponses, classEntityList);
-        }
-        return admissionResponses;
+        return mapper.toDTOList(admissionEntityList);
     }
 
     @Override
@@ -75,13 +61,7 @@ public class AdmissionServiceImpl implements AdmissionService {
         if (responseOptional.isEmpty())
             throw new RecordNotFoundException("No Data Found");
         AdmissionEntity response = responseOptional.get();
-        AdmissionResponse admissionResponse = mapper.toDTO(response);
-        if (!REJECTED.equals(response.getStatus())) {
-            ClassEntity classEntity = classService.getClassDetailsById(response.getCandidate().getClassId());
-            updateClassDetails(admissionResponse, classEntity);
-        }
-
-        return admissionResponse;
+        return mapper.toDTO(response);
     }
 
     @Override
@@ -92,46 +72,18 @@ public class AdmissionServiceImpl implements AdmissionService {
         if (response.isEmpty())
             throw new RecordNotFoundException("No Data Found");
         AdmissionEntity admissionEntity = response.get();
-        ClassEntity classEntity = updateAdmissionDetails(admissionEntity, request);
+
         AdmissionResponse admissionResponse = mapper.toDTO(admissionEntity);
-        if (!REJECTED.equals(request.getStatus()))
-            updateClassDetails(admissionResponse, classEntity);
         if(APPROVED.equals(request.getStatus()))
         {
             helper.saveAsStudent(admissionResponse);
-}
-
+            admissionEntity.getCandidate().setSection(request.getCandidate().getSection());}
+        admissionEntity.setStatus(request.getStatus());
         return admissionResponse;
     }
 
 
-    private ClassEntity updateAdmissionDetails(AdmissionEntity admissionEntity, Admission request) throws RecordNotFoundException {
-        ClassEntity classEntity = null;
-        if (REJECTED.equals(request.getStatus().toUpperCase(Locale.ROOT))) {
-            admissionEntity.getCandidate().setClassId(0);
-        } else if (APPROVED.equals(request.getStatus().toUpperCase(Locale.ROOT))) {
-            classEntity = classService.getClassDetailsById(Integer.parseInt(request.getCandidate().getClassDetails()));
-            admissionEntity.getCandidate().setClassId(classEntity.getId());
-        }
-        admissionEntity.setStatus(request.getStatus());
 
-        return classEntity;
-    }
 
-    private void updateClassDetails(AdmissionResponse admissionResponse, ClassEntity classEntity) {
-        log.debug("Updating class Details");
-        ClassEntityMapper mapperClass = Mappers.getMapper(ClassEntityMapper.class);
-        admissionResponse.getCandidate().setClassDetails(mapperClass.toDto(classEntity));
-        log.debug("Successfully updated class Details");
-    }
-
-    private void updateAllClassDetails(List<AdmissionResponse> admissionResponses, List<ClassEntity> classEntityList) {
-        log.debug("Updating all class Details");
-        Map<Integer, ClassEntity> classIdMap = classEntityList.stream().collect(Collectors.toMap(e -> e.id, e -> e));
-        ClassEntityMapper mapperClass = Mappers.getMapper(ClassEntityMapper.class);
-        admissionResponses.forEach(admissionResponse -> admissionResponse.getCandidate().setClassDetails(
-                mapperClass.toDto(classIdMap.get(admissionResponse.getCandidate().getClassId()))));
-        log.debug("Successfully updated class Details");
-    }
 
 }
